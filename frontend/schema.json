@@ -1,0 +1,1484 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "YouTube Blog Generator API",
+    "version": "1.0.0",
+    "description": "\n    # YouTube Blog Generator API\n\n    A powerful API that converts YouTube videos into professional blog posts using AI.\n\n    ## Core Features\n    - **AI-Powered Blog Generation**: Convert any YouTube video into a well-structured blog post\n    - **User Management**: Email-based authentication with JWT tokens\n    - **Blog Management**: Create, list, and delete your blog posts\n    - **Theme Preferences**: Customize UI theme (light/dark)\n    - **Invite-Only Registration**: Secure, controlled user access\n    - **Admin Controls**: Comprehensive user and invite management\n\n    ## Authentication\n    This API uses JWT (JSON Web Token) authentication:\n\n    1. **Registration** (Invite Only):\n       - Obtain an invite code from an administrator\n       - Register at `/api/auth/register/` with your email and invite code\n       - Store your access and refresh tokens\n\n    2. **Authentication Flow**:\n       - Get tokens: `POST /api/auth/token/`\n       - Refresh token: `POST /api/auth/token/refresh/`\n       - Include in requests: `Authorization: Bearer <token>`\n\n    3. **Token Lifecycle**:\n       - Access tokens expire after 1 hour\n       - Refresh tokens expire after 1 day\n       - Refresh tokens are automatically rotated\n\n    ## API Structure\n\n    ### Blog Generation (`/api/blog/`)\n    - `POST /generate/`: Create blog from YouTube video\n    - `GET /list/`: View your blog posts\n    - `DELETE /<id>/`: Remove a blog post\n\n    ### User Management (`/api/auth/`)\n    - Registration and authentication\n    - Password management\n    - Theme preferences\n    - Account deletion\n\n    ### Admin Controls (`/api/management/`)\n    - User management\n    - Invite code generation\n    - Usage tracking\n    - User banning\n\n    ## Rate Limiting\n    - Standard users: 100 requests/hour\n    - Blog generation: 10 requests/hour\n    - Admin endpoints: 1000 requests/hour\n\n    ## Error Handling\n    The API uses standard HTTP status codes:\n    - 2xx: Success\n    - 4xx: Client errors (invalid input, unauthorized)\n    - 5xx: Server errors\n\n    Common error responses include:\n    ```json\n    {\n        \"error\": \"Detailed error message\",\n        \"code\": \"error_code\"\n    }\n    ```\n\n    ## Best Practices\n    1. Always validate YouTube URLs before submission\n    2. Store tokens securely\n    3. Implement token refresh logic\n    4. Handle rate limits gracefully\n    5. Implement proper error handling\n\n    ## Support\n    For API support or to report issues:\n    - Email: support@example.com\n    - Documentation: /api/docs/\n    - OpenAPI Schema: /api/schema/\n    ",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com",
+      "url": "https://example.com/support"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "paths": {
+    "/api/auth/delete-account/": {
+      "delete": {
+        "operationId": "api_auth_delete_account_destroy",
+        "description": "Permanently delete user account and all associated data",
+        "summary": "Delete account",
+        "tags": ["User Management"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account deleted successfully"
+          },
+          "401": {
+            "description": "Authentication failed"
+          }
+        }
+      }
+    },
+    "/api/auth/password/change/": {
+      "post": {
+        "operationId": "api_auth_password_change_create",
+        "description": "Change user's password",
+        "summary": "Change password",
+        "tags": ["User Management"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication failed"
+          }
+        }
+      }
+    },
+    "/api/auth/register/": {
+      "post": {
+        "operationId": "api_auth_register_create",
+        "description": "Register a new user account",
+        "summary": "Register new user",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          },
+          {}
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/api/auth/theme/": {
+      "post": {
+        "operationId": "api_auth_theme_create",
+        "description": "Update user's UI theme preference",
+        "summary": "Update UI theme",
+        "tags": ["User Management"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTheme"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTheme"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTheme"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTheme"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication failed"
+          }
+        }
+      }
+    },
+    "/api/auth/token/": {
+      "post": {
+        "operationId": "token_obtain_pair",
+        "description": "Takes a set of user credentials (username and password) and returns an access and refresh JSON web token pair",
+        "summary": "Get JWT token pair",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenObtainPairResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/auth/token/refresh/": {
+      "post": {
+        "operationId": "token_refresh",
+        "description": "Takes a refresh token and returns a new access token",
+        "summary": "Refresh access token",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRefreshResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Invalid token"
+          }
+        }
+      }
+    },
+    "/api/blog/generate-from-youtube/": {
+      "post": {
+        "operationId": "api_blog_generate_from_youtube_create",
+        "description": "\n        Generate a blog post from a YouTube video.\n        \n        This endpoint takes a YouTube URL and generates a blog post using AI. \n        If a blog post already exists for the video, it will return the \n        existing post unless regen=true is specified.\n        ",
+        "summary": "Generate blog post from YouTube video",
+        "tags": ["Blog Generation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/BlogRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/blog/my-blogs/": {
+      "get": {
+        "operationId": "api_blog_my_blogs_list",
+        "tags": ["api"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BlogList"
+                  }
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/blog/my-blogs/{id}/": {
+      "delete": {
+        "operationId": "api_blog_my_blogs_destroy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "tags": ["api"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        }
+      }
+    },
+    "/api/management/ban/": {
+      "post": {
+        "operationId": "api_management_ban_create",
+        "description": "Ban a user (admin only)",
+        "summary": "Ban user",
+        "tags": ["Admin"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBan"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBan"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBan"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBan"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      }
+    },
+    "/api/management/invites/": {
+      "get": {
+        "operationId": "api_management_invites_list",
+        "description": "List all invite codes (admin only)",
+        "summary": "List invite codes",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InviteCode"
+                  }
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "api_management_invites_create",
+        "description": "Create new invite code (admin only)",
+        "summary": "Create invite code",
+        "tags": ["Admin"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteCode"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteCode"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteCode"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteCode"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      }
+    },
+    "/api/management/invites/{code}/": {
+      "get": {
+        "operationId": "api_management_invites_retrieve",
+        "description": "Get detailed information about an invite code, including a list of users who used it to register",
+        "summary": "Get invite code details",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteCodeDetail"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Invite code not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "api_management_invites_destroy",
+        "description": "Delete an invite code",
+        "summary": "Delete invite code",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invite code deleted successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Invite code not found"
+          }
+        }
+      }
+    },
+    "/api/management/users/": {
+      "get": {
+        "operationId": "api_management_users_list",
+        "description": "List all users (admin only)",
+        "summary": "List users",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminUser"
+                  }
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      },
+      "post": {
+        "operationId": "api_management_users_create",
+        "description": "Create a new user (admin only)",
+        "summary": "Create user",
+        "tags": ["Admin"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUser"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        }
+      }
+    },
+    "/api/management/users/{username}/": {
+      "get": {
+        "operationId": "api_management_users_retrieve",
+        "description": "Get user details (admin only)",
+        "summary": "Get user details",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUser"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "api_management_users_destroy",
+        "description": "Delete user account (admin only)",
+        "summary": "Delete user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "tags": ["Admin"],
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/schema/": {
+      "get": {
+        "operationId": "schema_retrieve",
+        "description": "OpenApi3 schema for this API. Format can be selected via content negotiation.\n\n- YAML: application/vnd.oai.openapi\n- JSON: application/vnd.oai.openapi+json",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "af",
+                "ar",
+                "ar-dz",
+                "ast",
+                "az",
+                "be",
+                "bg",
+                "bn",
+                "br",
+                "bs",
+                "ca",
+                "ckb",
+                "cs",
+                "cy",
+                "da",
+                "de",
+                "dsb",
+                "el",
+                "en",
+                "en-au",
+                "en-gb",
+                "eo",
+                "es",
+                "es-ar",
+                "es-co",
+                "es-mx",
+                "es-ni",
+                "es-ve",
+                "et",
+                "eu",
+                "fa",
+                "fi",
+                "fr",
+                "fy",
+                "ga",
+                "gd",
+                "gl",
+                "he",
+                "hi",
+                "hr",
+                "hsb",
+                "hu",
+                "hy",
+                "ia",
+                "id",
+                "ig",
+                "io",
+                "is",
+                "it",
+                "ja",
+                "ka",
+                "kab",
+                "kk",
+                "km",
+                "kn",
+                "ko",
+                "ky",
+                "lb",
+                "lt",
+                "lv",
+                "mk",
+                "ml",
+                "mn",
+                "mr",
+                "ms",
+                "my",
+                "nb",
+                "ne",
+                "nl",
+                "nn",
+                "os",
+                "pa",
+                "pl",
+                "pt",
+                "pt-br",
+                "ro",
+                "ru",
+                "sk",
+                "sl",
+                "sq",
+                "sr",
+                "sr-latn",
+                "sv",
+                "sw",
+                "ta",
+                "te",
+                "tg",
+                "th",
+                "tk",
+                "tr",
+                "tt",
+                "udm",
+                "ug",
+                "uk",
+                "ur",
+                "uz",
+                "vi",
+                "zh-hans",
+                "zh-hant"
+              ]
+            }
+          }
+        ],
+        "tags": ["schema"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email address",
+            "maxLength": 254
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Active",
+            "description": "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+          },
+          "date_joined": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "last_login": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "nullable": true
+          },
+          "is_banned": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "ban_info": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "banned_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "required": [
+          "ban_info",
+          "date_joined",
+          "email",
+          "first_name",
+          "id",
+          "is_banned",
+          "last_login",
+          "last_name"
+        ]
+      },
+      "BlogList": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "youtube_title": {
+            "type": "string",
+            "readOnly": true
+          },
+          "blog_title": {
+            "type": "string",
+            "readOnly": true
+          },
+          "author_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "author_name",
+          "blog_title",
+          "created_at",
+          "id",
+          "updated_at",
+          "youtube_title"
+        ]
+      },
+      "BlogRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "YouTube video URL to generate blog post from. Supports standard, shortened, and embed URLs."
+          },
+          "regen": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false,
+            "description": "Set to true to force regeneration of an existing blog post. Defaults to false if not provided."
+          }
+        },
+        "required": ["url"]
+      },
+      "BlogResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "youtube_url": {
+            "type": "string",
+            "format": "uri",
+            "readOnly": true
+          },
+          "youtube_title": {
+            "type": "string",
+            "readOnly": true
+          },
+          "blog_title": {
+            "type": "string",
+            "readOnly": true
+          },
+          "content": {
+            "type": "string",
+            "readOnly": true
+          },
+          "author_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "author_name",
+          "blog_title",
+          "content",
+          "created_at",
+          "id",
+          "updated_at",
+          "youtube_title",
+          "youtube_url"
+        ]
+      },
+      "ChangePassword": {
+        "type": "object",
+        "properties": {
+          "old_password": {
+            "type": "string"
+          },
+          "new_password": {
+            "type": "string"
+          }
+        },
+        "required": ["new_password", "old_password"]
+      },
+      "CreateUser": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email address",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "invite_code": {
+            "type": "string",
+            "format": "uuid",
+            "writeOnly": true
+          }
+        },
+        "required": ["email", "invite_code", "password"]
+      },
+      "InviteCode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "code": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "created_by": {
+            "type": "string",
+            "readOnly": true
+          },
+          "max_uses": {
+            "type": "integer",
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "format": "int64"
+          },
+          "uses": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "is_valid": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "code",
+          "created_at",
+          "created_by",
+          "id",
+          "is_valid",
+          "uses"
+        ]
+      },
+      "InviteCodeDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "code": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "created_by": {
+            "type": "string",
+            "readOnly": true
+          },
+          "max_uses": {
+            "type": "integer",
+            "maximum": 9223372036854776000,
+            "minimum": 0,
+            "format": "int64"
+          },
+          "uses": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "is_valid": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "usages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InviteCodeUsage"
+            },
+            "readOnly": true
+          }
+        },
+        "required": [
+          "code",
+          "created_at",
+          "created_by",
+          "id",
+          "is_valid",
+          "usages",
+          "uses"
+        ]
+      },
+      "InviteCodeUsage": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "used_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "required": ["email", "used_at"]
+      },
+      "TokenObtainPair": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "access": {
+            "type": "string",
+            "readOnly": true
+          },
+          "refresh": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": ["access", "email", "password", "refresh"]
+      },
+      "TokenObtainPairResponse": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": ["access", "refresh"]
+      },
+      "TokenRefresh": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string",
+            "readOnly": true
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": ["access", "refresh"]
+      },
+      "TokenRefreshResponse": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string"
+          }
+        },
+        "required": ["access"]
+      },
+      "UiThemeEnum": {
+        "enum": ["light", "dark"],
+        "type": "string",
+        "description": "* `light` - Light\n* `dark` - Dark"
+      },
+      "UpdateTheme": {
+        "type": "object",
+        "properties": {
+          "ui_theme": {
+            "$ref": "#/components/schemas/UiThemeEnum"
+          }
+        },
+        "required": ["ui_theme"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email address",
+            "maxLength": 254
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "ui_theme": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "email",
+          "first_name",
+          "id",
+          "last_name",
+          "password",
+          "ui_theme"
+        ]
+      },
+      "UserBan": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "writeOnly": true
+          },
+          "reason": {
+            "type": "string"
+          },
+          "banned_by": {
+            "type": "string",
+            "readOnly": true
+          },
+          "banned_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": ["banned_at", "banned_by", "email", "reason"]
+      }
+    },
+    "securitySchemes": {
+      "jwtAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "",
+      "description": "Current environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Blog Posts",
+      "description": "\n            View and manage your generated blog posts.\n            \n            These endpoints allow you to:\n            - View your blog collection\n            - Remove unwanted blog posts\n            - Track creation and update times\n            \n            Each blog post includes:\n            - Generated blog content\n            - Original YouTube video information\n            - Author details\n            - Timestamps\n            "
+    },
+    {
+      "name": "Authentication",
+      "description": "\n            User authentication endpoints including registration (invite-only),\n            token management, and session control.\n            "
+    },
+    {
+      "name": "User Management",
+      "description": "\n            Personal account management including password changes,\n            theme preferences, and account deletion.\n            "
+    },
+    {
+      "name": "Admin",
+      "description": "\n            Administrative endpoints for user management, invite code generation,\n            usage tracking, and platform moderation. Requires superuser access.\n            "
+    }
+  ],
+  "externalDocs": {
+    "description": "Additional Documentation",
+    "url": "/redoc/"
+  }
+}
